@@ -1,5 +1,5 @@
 const express = require('express'); /* importando o express */
-const { uuid } = require('uuidv4'); /* util para criar id's */
+const { uuid, isUuid } = require('uuidv4'); /* util para criar id's */
 
 const app = express(); /* Aplicação criada */
 
@@ -8,7 +8,34 @@ app.use(express.json()); /* Necessário para lermos os JSON vindos no request */
 /* Utilizaremos essa variável para simular nosso banco de dados */
 const bd_projects = [];
 
+/* Incluindo as Middlewares */
+function logRequest(request, response, next){
+  const { method, url } = request; /* Vou trazer o método HTTP e a URL utilizada na requisição */
 
+  const logLabel = `[${method.toUpperCase()}] ${url}` /* Exemplo de resultado: [GET] /projects?title=React */
+
+  console.time(logLabel);
+
+  next(); /* Se o next não for chamado, a requisição vai parar por aqui e não vai continuar para os próximos códigos/middleware */
+
+  console.timeEnd(logLabel);
+}
+
+/* Validando o ID trazido pelo usuário com o Middleware, depois chamamos ele no PUT e DELETE */
+function validateProjectID(request, response,next){
+  const { id } = request.params;
+
+  /* Se o id não for um id válido passa mensagem de erro */
+  if (!isUuid(id)){
+    return response.status(400).json({error: 'Invalid project ID.'});
+  }
+
+  return next(); /* O next só será executado se o ID for válido, ou seja, se passar da condição feita acima */
+}
+
+/* Usando a função logRequest que são os Middlewares */
+app.use(logRequest);
+app.use('/projects/:id', validateProjectID);/* Executando o middlware de validação apenas nas rotas que são passados o id, ou seja, DELETE e PUT */
 
 /* Definindo a rota para retornar os nossos projetos(fakes) com o método GET */
 app.get('/projects', (request, response) => {
