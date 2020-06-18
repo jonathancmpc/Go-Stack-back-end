@@ -1,8 +1,10 @@
 const express = require('express'); /* importando o express */
+const cors = require('cors');
 const { uuid, isUuid } = require('uuidv4'); /* util para criar id's */
 
 const app = express(); /* Aplicação criada */
 
+app.use(cors()); /* Dessa forma, permite que qualquer front tenha acesso a nossa API */
 app.use(express.json()); /* Necessário para lermos os JSON vindos no request */
 
 /* Utilizaremos essa variável para simular nosso banco de dados */
